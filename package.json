@@ -1,5 +1,4 @@
 {
-    "devDependencies": {
-        "nodejs" : "16.9.0"
-    }
+    "name": "musix-bot-telegram",
+    "version": "v1"
 }
