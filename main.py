@@ -1,6 +1,5 @@
 #commits: imported hqaudio
 #         added to join/skip -> hqaudio in pipe
-#         get_call to terminal
 
 from email.mime import audio
 from pyrogram import filters
@@ -98,7 +97,6 @@ async def skip(client, message):
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
 async def join(client, message):       
     try:
-        print(app_call.get_call(message.chat.id))
         src_url = yt_dl.src_find(link[0])        
         await app_call.join_group_call(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
         del link[0]
