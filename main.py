@@ -1,11 +1,15 @@
-#commits: src_url -> comment
+#commits: imported hqaudio
+#         added to join/skip -> hqaudio in pipe
+#         get_call to terminal
 
+from email.mime import audio
 from pyrogram import filters
 from pyrogram import Client
 from pytgcalls import PyTgCalls
 from pytgcalls import idle
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioPiped
+from pytgcalls.types import HighQualityAudio
 import yt_dl
 
 #chat_id = -1001522096029 #-735193965
@@ -88,15 +92,15 @@ async def disconnect(client, message):
 @app.on_message(filters.command(["s","skip","s@Musix_bot2", "skip@Musix_bot2"]))
 async def skip(client, message):
     src_url = yt_dl.src_find(link[0])
-    await app_call.change_stream(message.chat.id, AudioPiped(src_url))
+    await app_call.change_stream(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
     del link[0]
 
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
 async def join(client, message):       
     try:
-        await print(app_call.get_call(message.chat.id))
+        print(app_call.get_call(message.chat.id))
         src_url = yt_dl.src_find(link[0])        
-        await app_call.join_group_call(message.chat.id, AudioPiped(src_url), stream_type=StreamType().pulse_stream)
+        await app_call.join_group_call(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
         del link[0]
         #await app.send_message(message.chat.id, "__Joining...__")
     except:
