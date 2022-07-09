@@ -41,6 +41,11 @@ async def start(client, message):
 async def help(client, message):
     await app.send_message(message.chat.id, txt, disable_web_page_preview=True)
 
+@app.on_message(filters.command(["clearlist"]))
+async def clearlist(client, message):
+    link.clear()
+    await app.send_message(message.chat.id, "<pre>List is now empty</pre>")
+
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
     msg = message.text
