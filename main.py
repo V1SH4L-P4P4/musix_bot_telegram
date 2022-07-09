@@ -78,7 +78,7 @@ async def play(client, message):
 
 @app.on_message(filters.command(['search']))
 async def search(client, message):
-    msg = message.txt
+    msg = message.text
     link_req = msg.split('/search')[1].strip()
     url = yt_search.lookup(link_req)
     link.append(url)
