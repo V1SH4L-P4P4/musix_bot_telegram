@@ -1,5 +1,7 @@
 #commits: audio src not found exceptions
 # added search command 
+# skip - join called
+# join - leave if src not found
 
 from email.mime import audio
 from pyrogram import filters
@@ -105,9 +107,7 @@ async def disconnect(client, message):
 
 @app.on_message(filters.command(["s","skip","s@Musix_bot2", "skip@Musix_bot2"]))
 async def skip(client, message):
-    src_url = yt_dl.src_find(link[0])
-    await app_call.change_stream(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
-    del link[0]
+    join(client, message)
 
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
 async def join(client, message):       
@@ -119,6 +119,7 @@ async def join(client, message):
     except:
         if NoAudioSourceFound:
             await app.send_message(message.chat.id, "No audio src found,\nDo /pop to remove 1st input from list")
+            await app_call.leave_group_call(message.chat.id)
         else:
             await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
 
