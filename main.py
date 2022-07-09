@@ -107,7 +107,8 @@ async def disconnect(client, message):
 
 @app.on_message(filters.command(["s","skip","s@Musix_bot2", "skip@Musix_bot2"]))
 async def skip(client, message):
-    join(client, message)
+    await app_call.leave_group_call(message.chat.id)
+    await join(client, message)
 
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
 async def join(client, message):       
