@@ -76,7 +76,7 @@ async def play(client, message):
     except:
         await message.reply("Invalid link")
 
-@app.on_message(filter.command(['search']))
+@app.on_message(filters.command(['search']))
 async def search(client, message):
     msg = message.txt
     link_req = msg.split('/search')[1].strip()
