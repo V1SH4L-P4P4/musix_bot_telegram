@@ -43,10 +43,11 @@ async def help(client, message):
 
 @app.on_message(filters.command(["clearlist"]))
 async def clearlist(client, message):
-    if link[0] == '':
+    if bool(link):
         await app.send_message(message.chat.id, "<pre>List is already clear</pre>")
-    link.clear()
-    await app.send_message(message.chat.id, "<pre>List is now empty</pre>")
+    else:
+        link.clear()
+        await app.send_message(message.chat.id, "<pre>List is now empty</pre>")
 
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
