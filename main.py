@@ -1,5 +1,4 @@
-#commits: imported hqaudio
-#         added to join/skip -> hqaudio in pipe
+#commits: 
 
 from email.mime import audio
 from pyrogram import filters
@@ -51,6 +50,10 @@ async def clearlist(client, message):
     else:
         link.clear()
         await app.send_message(message.chat.id, "<pre>List is now empty</pre>")
+
+@app.on_message(filters.command(['pop']))
+async def pop(client, message):
+    del link[0]
 
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
