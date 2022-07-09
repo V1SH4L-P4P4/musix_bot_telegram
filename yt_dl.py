@@ -8,4 +8,3 @@ def src_find(url):
         info = ydl.extract_info(url, download=False)
         url_aud = info['formats'][0]['url']
         return url_aud
-

@@ -1,4 +1,5 @@
 #commits: audio src not found exceptions
+# added search command 
 
 from email.mime import audio
 from pyrogram import filters
@@ -10,6 +11,7 @@ from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types import HighQualityAudio
 from pytgcalls.exceptions import NoAudioSourceFound
 import yt_dl
+import yt_search
 
 #chat_id = -1001522096029 #-735193965
 link = [] #"D:\games\My Money Dont Jiggle Jiggle.mp3"
@@ -74,6 +76,15 @@ async def play(client, message):
     except:
         await message.reply("Invalid link")
 
+@app.on_message(filter.command(['search']))
+async def search(client, message):
+    msg = message.txt
+    link_req = msg.split('/search')[1].strip()
+    url = yt_search.lookup(link_req)
+    link.append(url)
+    await app.send_message(message.chat.id, f"Query passed, {url}\n__Here is the url__")
+
+
 @app.on_message(filters.command(['q','queue','q@Musix_bot2','queue@Musix_bot2']))
 async def queue(client, message):
     if len(link) > 0:
@@ -107,7 +118,7 @@ async def join(client, message):
         #await app.send_message(message.chat.id, "__Joining...__")
     except:
         if NoAudioSourceFound:
-            await app.send_message(message.chat.id, "No audio src found,\nDo <pre>/pop</pre> to remove 1st input from list")
+            await app.send_message(message.chat.id, "No audio src found,\nDo /pop to remove 1st input from list")
         else:
             await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
 
