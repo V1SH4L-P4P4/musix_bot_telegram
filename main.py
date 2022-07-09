@@ -1,4 +1,4 @@
-#commits: 
+#commits: audio src not found exceptions
 
 from email.mime import audio
 from pyrogram import filters
@@ -8,6 +8,7 @@ from pytgcalls import idle
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types import HighQualityAudio
+from pytgcalls.exceptions import NoAudioSourceFound
 import yt_dl
 
 #chat_id = -1001522096029 #-735193965
@@ -105,7 +106,10 @@ async def join(client, message):
         del link[0]
         #await app.send_message(message.chat.id, "__Joining...__")
     except:
-        await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
+        if NoAudioSourceFound:
+            await app.send_message(message.chat.id, "No audio src found,\nDo <pre>/pop</pre> to remove 1st input from list")
+        else:
+            await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
 
 #Chat join/Play music
 '''app_call.start()
