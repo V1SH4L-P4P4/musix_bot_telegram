@@ -4,7 +4,6 @@
 # join - leave if src not found
 #changes in error handling for src file
 
-from email.mime import audio
 from pyrogram import filters
 from pyrogram import Client
 from pytgcalls import PyTgCalls
@@ -13,6 +12,7 @@ from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types import HighQualityAudio
 from pytgcalls.exceptions import NoAudioSourceFound
+from pytgcalls.exceptions import NoActiveGroupCall
 import yt_dl
 import yt_search
 
@@ -51,15 +51,26 @@ async def help(client, message):
 
 @app.on_message(filters.command(["clearlist"]))
 async def clearlist(client, message):
-    if not(bool(link)):
-        await app.send_message(message.chat.id, "<pre>List is already clear</pre>")
-    else:
+    if bool(link):
         link.clear()
         await app.send_message(message.chat.id, "<pre>List is now empty</pre>")
+    else:
+        await app.send_message(message.chat.id, "<pre>List is already clear</pre>")
 
 @app.on_message(filters.command(['pop']))
 async def pop(client, message):
-    del link[0]
+    msg = message.text
+    index_no = msg.split("/pop")[1].strip() #pass not integer/out of index no
+    try:
+        #conversion
+        converted = int(index_no)
+    except ValueError:
+        await app.send_message(message.chat.id, "__Argument not an integer.__")
+    try: 
+        del link[converted]
+        await app.send_message(message.chat.id, "<pre>Removed from que list.</pre>")
+    except IndexError:
+        await app.send_message(message.chat.id, f"**Out of list index**\nOnly have {len(link)} items in queue")
 
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
@@ -85,7 +96,7 @@ async def search(client, message):
     link_req = msg.split('/search')[1].strip()
     url = yt_search.lookup(link_req)
     if url in link:
-        await app.send_message(message.chat.id, "already in queue")
+        await app.send_message(message.chat.id, "Already in queue")
     else:
         link.append(url)
         await app.send_message(message.chat.id, f"Query passed,\n{url}\n__Here is the url__")
@@ -94,8 +105,12 @@ async def search(client, message):
 @app.on_message(filters.command(['q','queue','q@Musix_bot2','queue@Musix_bot2']))
 async def queue(client, message):
     if len(link) > 0:
+        title = []
         for i in link:
-            await app.send_message(message.chat.id, i, disable_web_page_preview=True)
+            title.append(yt_search.search_title(i))
+        temp_text = "\n".join(title)
+        await app.send_message(message.chat.id, temp_text, disable_web_page_preview=True)
+        title.clear()
     else:
         await app.send_message(message.chat.id, "<pre>Queue list is empty</pre>")
 
@@ -115,17 +130,18 @@ async def skip(client, message):
     await join(client, message)
 
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
-async def join(client, message):       
+async def join(client, message):          
     try:
         src_url = yt_dl.src_find(link[0])        
-        await app_call.join_group_call(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
-        del link[0]
-        #await app.send_message(message.chat.id, "__Joining...__")
-    except NoAudioSourceFound as e:
+        try:
+            await app_call.join_group_call(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
+            del link[0]
+        except NoActiveGroupCall:
+            await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
+            #await app.send_message(message.chat.id, "__Joining...__")
+    except NoAudioSourceFound:
         await app.send_message(message.chat.id, "No audio src found,\nDo /pop to remove 1st input from list")
         await app_call.leave_group_call(message.chat.id)
-    except:
-        await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
 
 #Chat join/Play music
 '''app_call.start()
