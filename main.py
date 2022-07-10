@@ -121,12 +121,11 @@ async def join(client, message):
         await app_call.join_group_call(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
         del link[0]
         #await app.send_message(message.chat.id, "__Joining...__")
-    except NoAudioSourceFound as audio:
-        if audio:
-            await app.send_message(message.chat.id, "No audio src found,\nDo /pop to remove 1st input from list")
-            await app_call.leave_group_call(message.chat.id)
-        else:
-            await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
+    except NoAudioSourceFound as e:
+        await app.send_message(message.chat.id, "No audio src found,\nDo /pop to remove 1st input from list")
+        await app_call.leave_group_call(message.chat.id)
+    except:
+        await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
 
 #Chat join/Play music
 '''app_call.start()
