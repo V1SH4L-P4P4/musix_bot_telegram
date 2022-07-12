@@ -6,13 +6,15 @@
 
 from pyrogram import filters
 from pyrogram import Client
+from pyrogram.types import Update
+
 from pytgcalls import PyTgCalls
 from pytgcalls import idle
 from pytgcalls import StreamType
 from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types import HighQualityAudio
-from pytgcalls.exceptions import NoAudioSourceFound
-from pytgcalls.exceptions import NoActiveGroupCall
+from pytgcalls import exceptions as ex
+from pytgcalls.types import StreamAudioEnded
 import yt_dl
 import yt_search
 
@@ -72,6 +74,17 @@ async def pop(client, message):
     except IndexError:
         await app.send_message(message.chat.id, f"**Out of list index**\nOnly have {len(link)} items in queue")
 
+@app_call.on_stream_end()
+async def autostream(client:PyTgCalls, update:Update):
+    if isinstance(update, StreamAudioEnded):
+        try:
+            src_url = yt_dl.src_find(link[0]) 
+            await app_call.change_stream(update.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
+            del link[0]
+        except:
+            await app.send_message(update.chat.id, "**Unknown error**\n\nDo /help")
+            await app_call.leave_group_call(update.chat.id)
+
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
     msg = message.text
@@ -126,8 +139,11 @@ async def disconnect(client, message):
 
 @app.on_message(filters.command(["s","skip","s@Musix_bot2", "skip@Musix_bot2"]))
 async def skip(client, message):
-    await app_call.leave_group_call(message.chat.id)
-    await join(client, message)
+    try:
+        await app_call.leave_group_call(message.chat.id)
+        await join(client, message)
+    except ex.NotInGroupCallError:
+        await app.send_message(message.chat.id, "Not in a group call.")
 
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
 async def join(client, message):          
@@ -136,11 +152,13 @@ async def join(client, message):
         try:
             await app_call.join_group_call(message.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
             del link[0]
-        except NoActiveGroupCall:
+        except ex.NoActiveGroupCall:
             await app.send_message(message.chat.id, "No active Group calls or,\nMaybe __queue list__ is empty.\nDo /q to get __queue list__")
+        except ex.AlreadyJoinedError:
+            await app.send_message(message.chat.id, "<pre>Already in a group call.</pre>")
             #await app.send_message(message.chat.id, "__Joining...__")
-    except NoAudioSourceFound:
-        await app.send_message(message.chat.id, "No audio src found,\nDo /pop to remove 1st input from list")
+    except ex.NoAudioSourceFound:
+        await app.send_message(message.chat.id, "No audio src found,\nDo /pop [index] to remove that from list.")
         await app_call.leave_group_call(message.chat.id)
 
 #Chat join/Play music
