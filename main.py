@@ -81,15 +81,13 @@ async def pop(client, message):
 
 @app_call.on_stream_end()
 async def autostream(client:PyTgCalls, update:Update):
-    try:
-        src_url = yt_dl.src_find(link[0]) 
-        await app_call.change_stream(update.chat_id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
-        del link[0]
-    except:
-        pass
-    '''except:
-        await app.send_message(update.chat_id, "**Unknown error**\n\nDo /help")
-        await app_call.leave_group_call(update.chat_id)'''
+    if isinstance(update, StreamAudioEnded):
+        try:
+            await app_call.change_stream(update.chat_id, AudioPiped(yt_dl.src_find(link[0]), audio_parameters=HighQualityAudio()))
+            del link[0]
+        except:
+            await app.send_message(update.chat_id, "Auto play inactive for now.")
+            await app_call.leave_group_call(update.chat_id)
 
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
@@ -102,7 +100,6 @@ async def play(client, message):
             await message.reply("**Invalid**\n__Do /p [link]__")
         elif "https://" in link_req:
             link.append(link_req)  #play krne ke baad pop krwana h
-            print(link)
             await app.send_message(message.chat.id, "<pre>Added to queue list</pre>")
         else:
             await app.send_message(message.chat.id, "Youtube ka link daal bhai share mai se..")
@@ -178,7 +175,7 @@ async def approve(client, message):
             await app.send_message(message.chat.id, "__User already allowed to use /s method.__")
         else:
             approvallist.append(message.reply_to_message.from_user.id)
-            await app.send_message(message.chat.id, "<pre>{message.reply_to_message.from_user.first_name} is now allowed to use skip method.</pre>")
+            await app.send_message(message.chat.id, f"<pre>{message.reply_to_message.from_user.first_name} is now allowed to use skip method.</pre>")
     else:
         await app.send_message(message.chat.id, "Acha")
 
@@ -203,6 +200,8 @@ async def join(client, message):
     except ex.NoAudioSourceFound:
         await app.send_message(message.chat.id, "No audio src found,\nDo /pop [index] to remove that from list.")
         await app_call.leave_group_call(message.chat.id)
+    except IndexError:
+        await app.send_message(message.chat.id, "__List is empty.__")
 
 #Chat join/Play music
 '''app_call.start()
