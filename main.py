@@ -81,12 +81,9 @@ async def pop(client, message):
 
 @app_call.on_stream_end()
 async def autostream(client:PyTgCalls, update:Update):
-    try:
-        src_url = yt_dl.src_find(link[0]) 
-        await app_call.change_stream(update.chat_id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
-        del link[0]
-    except:
-        pass
+    src_url = yt_dl.src_find(link[0]) 
+    await app_call.change_stream(update.chat_id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
+    del link[0]
     '''except:
         await app.send_message(update.chat_id, "**Unknown error**\n\nDo /help")
         await app_call.leave_group_call(update.chat_id)'''
