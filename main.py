@@ -81,9 +81,12 @@ async def pop(client, message):
 
 @app_call.on_stream_end()
 async def autostream(client:PyTgCalls, update:Update):
-    src_url = yt_dl.src_find(link[0]) 
-    await app_call.change_stream(update.chat_id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
-    del link[0]
+    try:
+        src_url = yt_dl.src_find(link[0]) 
+        await app_call.change_stream(update.chat_id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
+        del link[0]
+    except:
+        pass
     '''except:
         await app.send_message(update.chat_id, "**Unknown error**\n\nDo /help")
         await app_call.leave_group_call(update.chat_id)'''
@@ -99,6 +102,7 @@ async def play(client, message):
             await message.reply("**Invalid**\n__Do /p [link]__")
         elif "https://" in link_req:
             link.append(link_req)  #play krne ke baad pop krwana h
+            print(link)
             await app.send_message(message.chat.id, "<pre>Added to queue list</pre>")
         else:
             await app.send_message(message.chat.id, "Youtube ka link daal bhai share mai se..")
