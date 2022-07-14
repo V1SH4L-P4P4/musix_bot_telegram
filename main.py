@@ -4,6 +4,7 @@
 # join - leave if src not found
 #changes in error handling for src file
 
+import random
 from pyrogram import filters
 from pyrogram import Client
 from pyrogram.types import Update
@@ -15,11 +16,15 @@ from pytgcalls.types.input_stream import AudioPiped
 from pytgcalls.types import HighQualityAudio
 from pytgcalls import exceptions as ex
 from pytgcalls.types import StreamAudioEnded
+
 import yt_dl
 import yt_search
+import sp_search
+from time import sleep
 
 #chat_id = -1001522096029 #-735193965
 link = [] #"D:\games\My Money Dont Jiggle Jiggle.mp3"
+approvallist = [1289504212]
 
 txt = """
 /j(oin) - __Bot joins active voice chat__
@@ -76,14 +81,12 @@ async def pop(client, message):
 
 @app_call.on_stream_end()
 async def autostream(client:PyTgCalls, update:Update):
-    if isinstance(update, StreamAudioEnded):
-        try:
-            src_url = yt_dl.src_find(link[0]) 
-            await app_call.change_stream(update.chat.id, AudioPiped(src_url, audio_parameters=HighQualityAudio()), stream_type=StreamType().pulse_stream)
-            del link[0]
-        except:
-            await app.send_message(update.chat.id, "**Unknown error**\n\nDo /help")
-            await app_call.leave_group_call(update.chat.id)
+    src_url = yt_dl.src_find(link[0]) 
+    await app_call.change_stream(update.chat_id, AudioPiped(src_url, audio_parameters=HighQualityAudio()))
+    del link[0]
+    '''except:
+        await app.send_message(update.chat_id, "**Unknown error**\n\nDo /help")
+        await app_call.leave_group_call(update.chat_id)'''
 
 @app.on_message(filters.command(["p","play","p@Musix_bot2", "play@Musix_bot2"]))
 async def play(client, message):
@@ -102,6 +105,22 @@ async def play(client, message):
 
     except:
         await message.reply("Invalid link")
+
+@app.on_message(filters.command(['artist']))
+async def search(client, message):
+    msg = message.text
+    try:
+        link_req = msg.split('/artist')[1].strip()
+        music_list = sp_search.recommend(link_req)
+        for i in range(0,5):
+            select_music = random.choice(music_list)
+            query_for_ytsearch = select_music + " " + link_req
+            yt_search_music = yt_search.lookup(query_for_ytsearch)
+            link.append(yt_search_music)
+        await app.send_message(message.chat.id, "<pre>Added a 5 random songs from this artist to list</pre>")
+        music_list.clear()
+    except:
+        await app.send_message(message.chat.id, "Nhi milra yrr..")
 
 @app.on_message(filters.command(['search']))
 async def search(client, message):
@@ -139,11 +158,31 @@ async def disconnect(client, message):
 
 @app.on_message(filters.command(["s","skip","s@Musix_bot2", "skip@Musix_bot2"]))
 async def skip(client, message):
-    try:
-        await app_call.leave_group_call(message.chat.id)
-        await join(client, message)
-    except ex.NotInGroupCallError:
-        await app.send_message(message.chat.id, "Not in a group call.")
+    if message.from_user.id in approvallist:
+        try:
+            await app_call.leave_group_call(message.chat.id)
+            await join(client, message)
+        except ex.NoActiveGroupCall:
+            await app.send_message(message.chat.id, "Not in a group call.")
+    else:
+        await app.send_message(message.chat.id, "You are not allowed to use this method.")
+
+@app.on_message(filters.command(['approve']))
+async def approve(client, message):
+    if message.from_user.id == 1289504212:
+        if message.reply_to_message.from_user.id in approvallist:
+            await app.send_message(message.chat.id, "__User already allowed to use /s method.__")
+        else:
+            approvallist.append(message.reply_to_message.from_user.id)
+            await app.send_message(message.chat.id, "<pre>{message.reply_to_message.from_user.first_name} is now allowed to use skip method.</pre>")
+    else:
+        await app.send_message(message.chat.id, "Acha")
+
+@app.on_message(filters.command(['disapprove']))
+async def disapprove(client, message):
+    if message.from_user.id == 1289504212:
+        approvallist.remove(message.reply_to_message.from_user.id)
+        await app.send_message(message.chat.id, "User removed from approval list now can't user /s method.")
 
 @app.on_message(filters.command(["j", "join", "j@Musix_bot2", "join@Musix_bot2"]))
 async def join(client, message):          
